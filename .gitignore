@@ -1,0 +1,4 @@
+# build output
+opencode-tokens
+*.o
+.DS_Store
