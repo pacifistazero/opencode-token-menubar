@@ -91,10 +91,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // menu bar title: "$57 · 23%"
         let title = String(format: "$%.0f · %.0f%%", u.cost, pct)
         if let button = statusItem.button {
-            button.title = title
-            if pct >= 100 { button.contentTintColor = .systemRed }
-            else if pct >= 70 { button.contentTintColor = .systemOrange }
-            else { button.contentTintColor = nil }
+            button.contentTintColor = nil
+            if pct >= 70 {
+                let color: NSColor = pct >= 100 ? .systemRed : .systemOrange
+                button.attributedTitle = NSAttributedString(string: title, attributes: [
+                    .foregroundColor: color,
+                    .font: NSFont.menuBarFont(ofSize: 0),
+                ])
+            } else {
+                button.title = title
+            }
         }
 
         let menu = NSMenu()
