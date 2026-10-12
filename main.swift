@@ -24,7 +24,8 @@ func midnightMillis() -> Int64 {
     return Int64(start.timeIntervalSince1970 * 1000)
 }
 
-// Minimal JSON pull: we only need cost, tokens.total, modelID. Use JSONSerialization.
+// Minimal JSON pull: we only need cost, tokens, model.id. Use JSONSerialization.
+// opencode 2.0 writes assistant messages to session_message, not message.
 func todayUsage() -> DayUsage {
     var u = DayUsage()
     var db: OpaquePointer?
@@ -35,7 +36,7 @@ func todayUsage() -> DayUsage {
     defer { sqlite3_close(db) }
 
     var stmt: OpaquePointer?
-    let sql = "SELECT data FROM message WHERE time_created>=?"
+    let sql = "SELECT data FROM session_message WHERE type='assistant' AND time_created>=?"
     guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return u }
     defer { sqlite3_finalize(stmt) }
     sqlite3_bind_int64(stmt, 1, midnightMillis())
@@ -44,11 +45,17 @@ func todayUsage() -> DayUsage {
         guard let c = sqlite3_column_text(stmt, 0) else { continue }
         let jsonStr = String(cString: c)
         guard let data = jsonStr.data(using: .utf8),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let tokens = obj["tokens"] as? [String: Any] else { continue }
-        let total = (tokens["total"] as? Int) ?? 0
-        let cost = (obj["cost"] as? Double) ?? 0
-        let model = (obj["modelID"] as? String) ?? "?"
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { continue }
+
+        // JSONSerialization may hand back Int or Double; NSNumber reads either.
+        let tokens = obj["tokens"] as? [String: Any] ?? [:]
+        let cache = tokens["cache"] as? [String: Any] ?? [:]
+        func int(_ v: Any?) -> Int { (v as? NSNumber)?.intValue ?? 0 }
+        let total = int(tokens["input"]) + int(tokens["output"]) + int(tokens["reasoning"])
+            + int(cache["read"]) + int(cache["write"])
+        let cost = (obj["cost"] as? NSNumber)?.doubleValue ?? 0
+        let model = ((obj["model"] as? [String: Any])?["id"] as? String) ?? "?"
+
         u.tokens += total
         u.cost += cost
         var m = u.models[model] ?? (0, 0)

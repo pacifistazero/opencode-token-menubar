@@ -16,10 +16,10 @@ The bar turns orange at 70% of budget and red at 100%.
 ## How it works
 
 opencode stores every message in a local SQLite database at
-`~/.local/share/opencode/opencode.db`. Each assistant message carries a `cost`
-(USD) and a `tokens.total`. The app opens that database read-only, sums up every
-message created since midnight, and shows the total. Nothing leaves your
-machine.
+`~/.local/share/opencode/opencode.db`. The app opens it read-only and reads the
+assistant rows from the `session_message` table (opencode 2.0+), where each row
+carries a `cost` (USD) and token counts. It sums up every assistant message
+created since midnight and shows the total. Nothing leaves your machine.
 
 ## Build
 
