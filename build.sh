@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 
 APP="$HOME/Applications/OpencodeTokens.app"
 
-swiftc -O main.swift -o opencode-tokens
+swiftc -O -target "$(uname -m)-apple-macos12.0" main.swift -o opencode-tokens
 
 mkdir -p "$APP/Contents/MacOS"
 cp opencode-tokens "$APP/Contents/MacOS/OpencodeTokens"
