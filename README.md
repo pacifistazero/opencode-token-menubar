@@ -4,6 +4,8 @@ A tiny macOS menu bar app that shows how much you've spent on
 [opencode](https://opencode.ai) today, as a dollar amount and as a percent of a
 daily USD budget. It resets at local midnight.
 
+![Clicking the menu bar item to open the spend breakdown](docs/demo.gif)
+
 The menu bar shows something like `$57 · 23%` (spend today, percent of budget).
 Click it for a breakdown:
 
